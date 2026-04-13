@@ -3,7 +3,7 @@ package com.comp586.bonfilms.entities;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.sql.Date;
 
 @Entity
