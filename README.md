@@ -45,8 +45,8 @@ A Spring Boot REST API for managing films and reviews.
 - `src/main/java/com/comp586/bonfilms`
   - `BonFilmsSpringBootApplication.java` — application entry point
   - `CorsConfig.java` — API CORS configuration
-  - `controllers/` — REST controllers for film and review endpoints
-  - `entities/` — JPA entity models for `Film` and `Review`
+  - `controllers/` — REST controllers for film, review, and auth endpoints
+  - `entities/` — JPA entity models for `Film`, `Review`, and `User`
   - `repositories/` — Spring Data JPA repository interfaces
   - `services/` — service interfaces for business logic
   - `impls/` — service implementations
@@ -107,6 +107,22 @@ A Spring Boot REST API for managing films and reviews.
   - Returns combined film and review data.
   - Response: `200 OK` with JSON array.
 
+## Auth endpoints
+
+- `POST /auth/login`
+  - Request body: JSON `AuthRequest` with `email` and `password`
+  - Response: `200 OK` with JSON `AuthResponse`
+    - `token` — temporary auth token for frontend storage
+    - `user` — user object containing `id` and `email`
+
+- `POST /auth/register`
+  - Request body: JSON `AuthRequest` with `email` and `password`
+  - Response: `201 Created` when registration succeeds
+
+- `POST /auth/forgot-password`
+  - Request body: JSON `AuthRequest` with `email` only
+  - Response: `202 Accepted` for password reset flow
+
 # Data model overview
 
 ## Film
@@ -132,6 +148,13 @@ Fields include:
 - `userReviewedId`
 - `film`
 - `dateReviewed`
+
+## User
+
+Fields include:
+
+- `id`
+- `email`
 
 # Testing
 
