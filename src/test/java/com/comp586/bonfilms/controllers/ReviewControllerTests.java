@@ -1,16 +1,16 @@
 package com.comp586.bonfilms.controllers;
 
 import com.comp586.bonfilms.entities.Review;
+import com.comp586.bonfilms.models.ReviewUpdateRequest;
 import com.comp586.bonfilms.services.ReviewService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -37,13 +37,13 @@ class ReviewControllerTests {
   @Test
   void getReviewById_returnsReviewWhenFound() throws Exception {
     Review review = new Review();
-    review.setId(1);
+    review.setId(1L);
     review.setRating(4);
     review.setReview("Nice film");
 
-    when(reviewService.getReview(eq(1))).thenReturn(review);
+    when(reviewService.getReview(eq(1L))).thenReturn(Optional.of(review));
 
-    mockMvc.perform(get("/api/review/1"))
+    mockMvc.perform(get("/api/reviews/1"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(1))
         .andExpect(jsonPath("$.rating").value(4))
@@ -52,9 +52,9 @@ class ReviewControllerTests {
 
   @Test
   void getReviewById_returnsNotFoundWhenMissing() throws Exception {
-    when(reviewService.getReview(eq(1))).thenReturn(null);
+    when(reviewService.getReview(eq(1L))).thenReturn(Optional.empty());
 
-    mockMvc.perform(get("/api/review/1"))
+    mockMvc.perform(get("/api/reviews/1"))
         .andExpect(status().isNotFound());
   }
 
@@ -65,13 +65,13 @@ class ReviewControllerTests {
     review.setReview("Fantastic");
 
     Review saved = new Review();
-    saved.setId(2);
+    saved.setId(2L);
     saved.setRating(5);
     saved.setReview("Fantastic");
 
     when(reviewService.saveReview(any(Review.class))).thenReturn(saved);
 
-    mockMvc.perform(post("/api/review/create")
+    mockMvc.perform(post("/api/reviews")
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(review)))
         .andExpect(status().isCreated())
@@ -82,35 +82,34 @@ class ReviewControllerTests {
   @Test
   void updateReview_returnsUpdatedReview() throws Exception {
     Review existing = new Review();
-    existing.setId(1);
+    existing.setId(1L);
     existing.setRating(3);
     existing.setReview("Okay");
 
     Review updated = new Review();
-    updated.setId(1);
+    updated.setId(1L);
     updated.setRating(5);
     updated.setReview("Excellent");
 
-    when(reviewService.getReview(eq(1))).thenReturn(existing);
+    when(reviewService.getReview(eq(1L))).thenReturn(Optional.of(existing));
     when(reviewService.updateReview(any(Review.class))).thenReturn(updated);
 
-    mockMvc.perform(put("/api/review/1")
+    mockMvc.perform(put("/api/reviews/1")
         .contentType(MediaType.APPLICATION_JSON)
-        .content(objectMapper.writeValueAsString(Map.of("rating", "5", "review", "Excellent"))))
-        .andExpect(status().isCreated())
+        .content(objectMapper.writeValueAsString(new ReviewUpdateRequest(5, "Excellent"))))
+        .andExpect(status().isOk())
         .andExpect(jsonPath("$.rating").value(5))
         .andExpect(jsonPath("$.review").value("Excellent"));
   }
 
   @Test
-  void deleteReview_returnsAcceptedOnDelete() throws Exception {
+  void deleteReview_returnsNoContentOnDelete() throws Exception {
     Review review = new Review();
-    review.setId(1);
+    review.setId(1L);
 
-    when(reviewService.getReview(eq(1))).thenReturn(review);
-    when(reviewService.deleteReview(eq(review))).thenReturn(null);
+    when(reviewService.getReview(eq(1L))).thenReturn(Optional.of(review));
 
-    mockMvc.perform(delete("/api/review/1"))
-        .andExpect(status().isAccepted());
+    mockMvc.perform(delete("/api/reviews/1"))
+        .andExpect(status().isNoContent());
   }
 }

@@ -1,56 +1,52 @@
 package com.comp586.bonfilms.controllers;
 
 import com.comp586.bonfilms.entities.Review;
+import com.comp586.bonfilms.models.ReviewUpdateRequest;
 import com.comp586.bonfilms.services.ReviewService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/reviews")
 public class ReviewController {
 
-    @Autowired
-    private ReviewService reviewService;
+    private final ReviewService reviewService;
 
-    @GetMapping("/review/{id}")
-    public ResponseEntity<Review> getReviewById(@PathVariable("id") int id) {
-        Review reviewData = reviewService.getReview(id);
-        if (reviewData != null) {
-            return new ResponseEntity<Review>(reviewData, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<Review>(HttpStatus.NOT_FOUND);
+    public ReviewController(ReviewService reviewService) {
+        this.reviewService = reviewService;
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Review> getReviewById(@PathVariable Long id) {
+        return reviewService.getReview(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    @PostMapping
+    public ResponseEntity<Review> createReview(@RequestBody Review review) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(reviewService.saveReview(review));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Review> updateReview(@PathVariable Long id, @RequestBody ReviewUpdateRequest updateRequest) {
+        return reviewService.getReview(id)
+                .map(existingReview -> {
+                    existingReview.setRating(updateRequest.rating());
+                    existingReview.setReview(updateRequest.review());
+                    return ResponseEntity.ok(reviewService.updateReview(existingReview));
+                })
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteReview(@PathVariable Long id) {
+        if (reviewService.getReview(id).isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
+        reviewService.deleteReview(id);
+        return ResponseEntity.noContent().build();
     }
-
-    @PostMapping("/review/create")
-    public ResponseEntity<Review> createReview(@RequestBody Review review) throws Exception {
-        return new ResponseEntity<Review>(reviewService.saveReview(review), HttpStatus.CREATED);
-    }
-
-    @PutMapping("/review/{id}")
-    public ResponseEntity<Review> updateReview(@PathVariable("id") int id, @RequestBody Map<String, String> body) {
-        Review reviewData = reviewService.getReview(id);
-        if (reviewData != null) {
-            reviewData.setRating(Integer.parseInt(body.get("rating")));
-            reviewData.setReview(body.get("review"));
-            return new ResponseEntity<Review>(reviewService.updateReview(reviewData), HttpStatus.CREATED);
-        } else {
-            return new ResponseEntity<Review>(HttpStatus.NOT_FOUND);
-        }
-    }
-
-    @DeleteMapping("/review/{id}")
-    public ResponseEntity<Review> deleteReview(@PathVariable("id") int id) {
-        Review reviewData = reviewService.getReview(id);
-        if (reviewData != null) {
-            return new ResponseEntity<Review>(reviewService.deleteReview(reviewData), HttpStatus.ACCEPTED);
-        } else {
-            return new ResponseEntity<Review>(HttpStatus.NOT_FOUND);
-        }
-    }
-
 }

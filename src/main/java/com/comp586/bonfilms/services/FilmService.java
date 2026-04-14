@@ -1,17 +1,15 @@
 package com.comp586.bonfilms.services;
 
 import com.comp586.bonfilms.entities.Film;
-import org.springframework.stereotype.Component;
-
 import java.util.List;
+import java.util.Optional;
 
-@Component
+
 public interface FilmService {
 
     List<Film> getAllFilms();
 
-    Film getFilm(int id);
+    Optional<Film> getFilm(Long id);
 
     Film saveFilm(Film film);
-
 }

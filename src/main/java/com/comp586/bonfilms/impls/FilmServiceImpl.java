@@ -1,40 +1,35 @@
 package com.comp586.bonfilms.impls;
 
 import com.comp586.bonfilms.entities.Film;
+import com.comp586.bonfilms.repositories.FilmRepository;
 import com.comp586.bonfilms.services.FilmService;
-import org.springframework.stereotype.Service;
-
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Root;
 import jakarta.transaction.Transactional;
 import java.util.List;
+import java.util.Optional;
+import org.springframework.stereotype.Service;
 
-@Service("filmServiceImpl")
+
+@Service
 public class FilmServiceImpl implements FilmService {
 
-    @PersistenceContext
-    private EntityManager entityManager;
+    private final FilmRepository filmRepository;
 
-    @Transactional
-    public List<Film> getAllFilms() {
-        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Film> criteria = builder.createQuery(Film.class);
-        Root<Film> root = criteria.from(Film.class);
-        criteria.select(root);
-        return entityManager.createQuery(criteria).getResultList();
+    public FilmServiceImpl(FilmRepository filmRepository) {
+        this.filmRepository = filmRepository;
     }
 
     @Transactional
-    public Film getFilm(int id) {
-        return entityManager.find(Film.class, id);
+    public List<Film> getAllFilms() {
+        return filmRepository.findAll();
+    }
+
+    @Transactional
+    public Optional<Film> getFilm(Long id) {
+        return filmRepository.findById(id);
     }
 
     @Transactional
     public Film saveFilm(Film film) {
-        entityManager.persist(film);
-        return film;
+        return filmRepository.save(film);
     }
 }

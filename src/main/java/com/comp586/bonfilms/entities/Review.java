@@ -1,10 +1,10 @@
 package com.comp586.bonfilms.entities;
 
+import jakarta.persistence.*;
+import java.sql.Date;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 
-import jakarta.persistence.*;
-import java.sql.Date;
 
 @Entity
 @Table(name = "reviews")
@@ -14,7 +14,7 @@ public class Review {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", unique = true, nullable = false)
-    private int id;
+    private Long id;
 
     @Column(name = "rating")
     private int rating;
@@ -25,9 +25,8 @@ public class Review {
     @Column(name = "user_reviewed_id")
     private String userReviewedId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "film_id", nullable = false)
-    // @Column(name = "film_id")
     private Film film;
 
     @Column(name = "date_reviewed")

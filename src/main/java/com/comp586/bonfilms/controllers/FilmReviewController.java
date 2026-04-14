@@ -3,35 +3,39 @@ package com.comp586.bonfilms.controllers;
 import com.comp586.bonfilms.models.FilmReview;
 import com.comp586.bonfilms.services.FilmService;
 import com.comp586.bonfilms.services.ReviewService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
-import java.util.List;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/film-reviews")
 public class FilmReviewController {
 
-    @Autowired
-    ReviewService reviewService;
+    private final ReviewService reviewService;
+    private final FilmService filmService;
 
-    @Autowired
-    FilmService filmService;
+    public FilmReviewController(ReviewService reviewService, FilmService filmService) {
+        this.reviewService = reviewService;
+        this.filmService = filmService;
+    }
 
-    @GetMapping("/reviews")
+    @GetMapping
     public ResponseEntity<List<FilmReview>> getAllReviews() {
-        List<FilmReview> filmReviews = new ArrayList<>();
-        reviewService.getAllReviews().forEach(review -> {
-            int id = review.getFilm().getId();
-            String title = filmService.getFilm(id).getTitle();
-            filmReviews.add(new FilmReview(review.getId(), review.getRating(), review.getReview(),
-                    review.getUserReviewedId(), title, review.getDateReviewed()));
-        });
-        return new ResponseEntity<List<FilmReview>>(filmReviews, HttpStatus.ACCEPTED);
+        List<FilmReview> filmReviews = reviewService.getAllReviews().stream()
+                .map(review -> {
+                    Long filmId = review.getFilm().getId();
+                    String title = filmService.getFilm(filmId)
+                            .map(film -> film.getTitle())
+                            .orElse("Unknown Title");
+                    return new FilmReview(review.getId(), review.getRating(), review.getReview(),
+                            review.getUserReviewedId(), title, review.getDateReviewed());
+                })
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(filmReviews);
     }
 }

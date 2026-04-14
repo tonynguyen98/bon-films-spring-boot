@@ -2,10 +2,10 @@ package com.comp586.bonfilms.entities;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import lombok.Data;
-
 import jakarta.persistence.*;
 import java.util.List;
+import lombok.Data;
+
 
 @Entity
 @Table(name = "films")
@@ -16,7 +16,7 @@ public class Film {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private int id;
+    private Long id;
 
     @Column(name = "title")
     private String title;
@@ -36,7 +36,7 @@ public class Film {
     @Column(name = "synopsis")
     private String synopsis;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "film")
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "film", orphanRemoval = true)
     private List<Review> reviews;
 
 }
